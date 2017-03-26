@@ -42,13 +42,13 @@ export default class MigratingAdapter {
     return Promise.settle(promises)
       .then((results) => {
         for (const result of results) {
-          if (result.isResolved()) {
+          if (result.isFulfilled()) {
             return Promise.resolve(result.value())
           }
         }
 
         // None were resolved
-        return Promise.reject(results.result[0].reason())
+        return Promise.reject(results[0].reason())
       })
   }
 
