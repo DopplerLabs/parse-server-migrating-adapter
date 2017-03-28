@@ -2,7 +2,7 @@
   "name": "parse-server-migrating-adapter",
   "version": "0.1.0",
   "engines": {
-    "node": ">=4.0"
+    "node": ">=6.0"
   },
   "description": "Parse Server file adapter to migrate between adapters",
   "author": "jemonjam <jacob.e.meacham@gmail.com>",

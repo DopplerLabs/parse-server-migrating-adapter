@@ -16,6 +16,14 @@ export default class MigratingAdapter {
   constructor(mainAdapter, oldAdapters) {
     this.mainAdapter = mainAdapter
     this.oldAdapters = oldAdapters
+
+    if (!mainAdapter) {
+      throw new Error('Main adapter required')
+    }
+
+    if (!oldAdapters || oldAdapters.length === 0) {
+      throw new Error('At least one old adapter is required')
+    }
   }
 
   // For a given config object, filename, and data, store a file
@@ -51,17 +59,11 @@ export default class MigratingAdapter {
         return Promise.resolve(adapter.getFileData(filename))
       })
 
-      return Promise.settle(promises)
-      .then((results) => {
-        for (const result of results) {
-          if (result.isResolved()) {
-            this.createFile(filename, result.value())
-            return Promise.resolve(result.value())
-          }
-        }
-
-        // None were resolved
-        return Promise.reject(err)
+      return Promise.any(promises)
+      .then(result => {
+        return this.createFile(filename, result)
+      }).catch(() => {
+        return err
       })
     })
   }
