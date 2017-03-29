@@ -21,6 +21,28 @@ test.afterEach.always((t) => {
   t.context.sandbox.restore()
 })
 
+test('constructor#requiresMainAdapter', t => {
+  try {
+    new MigratingAdapter(null, t.context.oldAdapters) // eslint-disable-line
+  } catch (err) {
+    t.is(err.message, 'Main adapter required')
+  }
+})
+
+test('constructor#requiresOldAdapter', t => {
+  try {
+    new MigratingAdapter(t.context.mainAdapter, null) // eslint-disable-line
+  } catch (err) {
+    t.is(err.message, 'At least one old adapter is required')
+  }
+
+  try {
+    new MigratingAdapter(t.context.mainAdapter, []) // eslint-disable-line
+  } catch (err) {
+    t.is(err.message, 'At least one old adapter is required')
+  }
+})
+
 test('createFile#createsInMainAdapter', t => {
   const migratingAdapter = t.context.migratingAdapter
   const sandbox = t.context.sandbox
@@ -51,7 +73,7 @@ test('getFileData#getsFromOldAdapters', async t => {
 
   sandbox.stub(t.context.mainAdapter, 'getFileData').rejects()
   const oldStubs = [
-    sandbox.stub(t.context.oldAdapters[0], 'getFileData').rejects(),
+    sandbox.stub(t.context.oldAdapters[0], 'getFileData').rejects('wtf'),
     sandbox.stub(t.context.oldAdapters[1], 'getFileData').resolves('myData')
   ]
 
@@ -71,6 +93,7 @@ test('getFileData#storesToMainAdapter', async t => {
   const createFileSpy = sandbox.spy(migratingAdapter, 'createFile')
   sandbox.stub(t.context.mainAdapter, 'getFileData').rejects()
   sandbox.stub(t.context.oldAdapters[0], 'getFileData').resolves('myData')
+  sandbox.stub(t.context.oldAdapters[1], 'getFileData').rejects()
 
   await migratingAdapter.getFileData('foo')
 

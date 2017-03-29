@@ -56,12 +56,13 @@ export default class MigratingAdapter {
     return this.mainAdapter.getFileData(filename)
     .catch(err => {
       const promises = this.oldAdapters.map((adapter) => {
-        return Promise.resolve(adapter.getFileData(filename))
+        return adapter.getFileData(filename)
       })
 
       return Promise.any(promises)
       .then(result => {
-        return this.createFile(filename, result)
+        this.createFile(filename, result)
+        return result
       }).catch(() => {
         return err
       })
