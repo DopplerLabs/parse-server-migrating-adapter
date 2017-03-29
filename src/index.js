@@ -42,13 +42,13 @@ export default class MigratingAdapter {
     return Promise.settle(promises)
       .then((results) => {
         for (const result of results) {
-          if (result.isResolved()) {
+          if (result.isFulfilled()) {
             return Promise.resolve(result.value())
           }
         }
 
         // None were resolved
-        return Promise.reject(results.result[0].reason())
+        return Promise.reject(results[0].reason())
       })
   }
 
@@ -56,12 +56,13 @@ export default class MigratingAdapter {
     return this.mainAdapter.getFileData(filename)
     .catch(err => {
       const promises = this.oldAdapters.map((adapter) => {
-        return Promise.resolve(adapter.getFileData(filename))
+        return adapter.getFileData(filename)
       })
 
       return Promise.any(promises)
       .then(result => {
-        return this.createFile(filename, result)
+        this.createFile(filename, result)
+        return result
       }).catch(() => {
         return err
       })
